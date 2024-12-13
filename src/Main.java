@@ -1,28 +1,36 @@
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Main {
-    public static void main(String[] args) {
-        BenchParser parser = new BenchParser();
-        Simulator simulator = new Simulator();
+    public static void runAllCombinations(Simulator simulator, BenchParser parser) {
+        List<String> inputLabels = parser.inputs.keySet().stream().sorted().toList();
+        int numInputs = inputLabels.size();
+        int numCombinations = 1 << numInputs;
 
-        try {
-            parser.parse("circuit.bench");
+        System.out.println(String.join(" | ", inputLabels) + " | " + String.join(" | ", parser.outputs));
+        System.out.println("-".repeat((numInputs + parser.outputs.size()) * 4));
 
-            // Initialize inputs with explicit Boolean values
+        for (int i = 0; i < numCombinations; i++) {
             Map<String, Boolean> testInputs = new HashMap<>();
-            testInputs.put("1", Boolean.TRUE);
-            testInputs.put("2", Boolean.TRUE);
-            testInputs.put("3", Boolean.TRUE);
-            testInputs.put("6", Boolean.TRUE);
-            testInputs.put("7", Boolean.TRUE);
-            System.out.println("Test Inputs: " + testInputs);
-
+            for (int j = 0; j < numInputs; j++) {
+                boolean value = (i & (1 << j)) != 0;
+                testInputs.put(inputLabels.get(j), value);
+            }
             simulator.runSimulation(testInputs, parser.gates, parser.outputs);
-
-        } catch (Exception e) {
-            e.printStackTrace();
+            Map<String, Boolean> results = simulator.values;
+            String inputValues = inputLabels.stream().map(label -> testInputs.get(label) ? "1" : "0").reduce((a, b) -> a + " | " + b).orElse("");
+            String outputValues = parser.outputs.stream().map(output -> results.getOrDefault(output, false) ? "1" : "0").reduce((a, b) -> a + " | " + b).orElse("");
+            System.out.println(inputValues + " | " + outputValues);
         }
+    }
+
+    public static void main(String[] args) throws Exception {
+        BenchParser parser = new BenchParser();
+        parser.parse("circuit.bench");
+        Simulator simulator = new Simulator();
+        runAllCombinations(simulator, parser);
     }
 }
 

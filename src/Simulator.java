@@ -24,7 +24,8 @@ class Simulator {
             case NOT -> !inputValues.getFirst();
             case NAND -> !inputValues.stream().allMatch(Boolean::booleanValue);
             case NOR -> inputValues.stream().noneMatch(Boolean::booleanValue);
-            case XOR -> inputValues.get(0) ^ inputValues.get(1);
+            case XOR -> inputValues.stream().reduce(false, (a, b) -> a ^ b);
+            case BUFF -> inputValues.getFirst();
         };
     }
 
@@ -32,20 +33,10 @@ class Simulator {
         if (inputs == null || gates == null || outputs == null) {
             throw new IllegalArgumentException("Inputs, gates, and outputs cannot be null.");
         }
-
-        values.clear();  // Reset state
-        values.putAll(inputs);  // Add inputs
-
-        System.out.println("Values After Initialization: " + values);  // Debug print
-
-        // Simulate gates
+        values.clear();
+        values.putAll(inputs);
         for (Gate gate : gates.values()) {
             values.put(gate.output, evaluateGate(gate));
-        }
-
-        // Print results
-        for (String output : outputs) {
-            System.out.println(output + ": " + values.getOrDefault(output, Boolean.FALSE));
         }
     }
 }

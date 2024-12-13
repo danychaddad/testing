@@ -2,8 +2,8 @@ import java.nio.file.*;
 import java.util.*;
 
 class BenchParser {
-    Map<String, Boolean> inputs = new TreeMap<>();
-    Map<String, Gate> gates = new TreeMap<>();
+    Map<String, Boolean> inputs = new TreeMap<>(Comparator.comparingInt(Integer::valueOf));
+    Map<String, Gate> gates = new TreeMap<>(Comparator.comparingInt(Integer::valueOf));
     List<String> outputs = new ArrayList<>();
 
     void parse(String fileName) throws Exception {
