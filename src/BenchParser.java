@@ -19,7 +19,6 @@ class BenchParser {
                 String outputName = line.substring(7, line.length() - 1).trim();
                 outputs.add(outputName);
             } else if (line.contains("=")) {
-                System.out.println(line);
                 String[] parts = line.split("=");
                 String output = parts[0].trim();
                 String[] gateParts = parts[1].trim().split("\\(");
@@ -32,5 +31,7 @@ class BenchParser {
                 gates.put(output, new Gate(output, type, gateInputs));
             }
         }
+        // Debugging output
+        System.out.println("Outputs: " + outputs);
     }
 }
