@@ -1,7 +1,7 @@
 import java.util.List;
 
 enum GateType {
-    AND, OR, NOT, NAND, NOR, XOR, BUFF
+    AND, OR, NOT, NAND, NOR, XOR, BUFF, XNOR
 }
 
 class Gate {

@@ -25,6 +25,7 @@ class Simulator {
             case NAND -> !inputValues.stream().allMatch(Boolean::booleanValue);
             case NOR -> inputValues.stream().noneMatch(Boolean::booleanValue);
             case XOR -> inputValues.stream().reduce(false, (a, b) -> a ^ b);
+            case XNOR -> inputValues.stream().reduce(false, (a, b) -> a == b);
             case BUFF -> inputValues.getFirst();
         };
     }
