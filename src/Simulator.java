@@ -15,12 +15,12 @@ class Simulator {
         return switch (gate.getType()) {
             case AND -> inputValues.stream().allMatch(Boolean::booleanValue);
             case OR -> inputValues.stream().anyMatch(Boolean::booleanValue);
-            case NOT -> !inputValues.getFirst();
+            case NOT -> !inputValues.get(0);
             case NAND -> !inputValues.stream().allMatch(Boolean::booleanValue);
             case NOR -> inputValues.stream().noneMatch(Boolean::booleanValue);
             case XOR -> inputValues.stream().reduce(false, Boolean::logicalXor);
             case XNOR -> inputValues.stream().reduce(false, (a, b) -> a == b);
-            case BUFF -> inputValues.getFirst();
+            case BUFF -> inputValues.get(0);
         };
     }
 
@@ -31,7 +31,12 @@ class Simulator {
         values.clear();
         values.putAll(inputs);
         for (Gate gate : gates.values()) {
-            values.put(gate.getOutput(), evaluateGate(gate));
+            // Check if the gate's output is faulty
+            if (inputs.containsKey(gate.getOutput())) {
+                values.put(gate.getOutput(), inputs.get(gate.getOutput()));
+            } else {
+                values.put(gate.getOutput(), evaluateGate(gate));
+            }
         }
     }
 
