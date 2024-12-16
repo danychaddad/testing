@@ -4,7 +4,7 @@ import java.util.stream.Collectors;
 public class Main {
     public static void main(String[] args) throws Exception {
         BenchParser parser = new BenchParser();
-        Circuit circuit = parser.parse("circuit.bench");
+        Circuit circuit = parser.parse("C:\\Users\\Nicolas\\Desktop\\Testing Project\\testing\\circuit.bench");
         Simulator simulator = new Simulator();
         SerialFaultSimulator serialFaultSimulator = new SerialFaultSimulator(simulator, circuit);
 
