@@ -7,6 +7,7 @@ public class Main {
         Circuit circuit = parser.parse("C:\\Users\\Nicolas\\Desktop\\Testing Project\\testing\\circuit.bench");
         Simulator simulator = new Simulator();
         SerialFaultSimulator serialFaultSimulator = new SerialFaultSimulator(simulator, circuit);
+        ParallelFaultSimulator parallelFaultSimulator = new ParallelFaultSimulator(simulator, circuit);
 
         Scanner scanner = new Scanner(System.in);
         List<String> inputLabels = new ArrayList<>(circuit.getInputs().keySet());
@@ -25,18 +26,11 @@ public class Main {
         System.out.println("Running True-Value Simulation...");
         runTrueValueSimulation(simulator, circuit, testVector);
 
-        System.out.println("Enter fault nodes separated by spaces (e.g., 1 3 5):");
-        scanner.nextLine();
-        String faultNodesInput = scanner.nextLine().trim();
-        List<String> faultNodes = Arrays.asList(faultNodesInput.split(" "));
+        System.out.println("Running Serial Fault Simulation for All Possible Faults...");
+        serialFaultSimulator.runAllFaultSimulations();
 
-        if (!validateFaultNodes(faultNodes, circuit)) {
-            System.out.println("Invalid nodes entered. Please enter valid node names from the circuit.");
-            return;
-        }
-
-        System.out.println("Running Fault Simulation with Selected Nodes...");
-        serialFaultSimulator.runWithFaults(faultNodes);
+        System.out.println("Running Parallel Fault Simulation for All Possible Faults...");
+        parallelFaultSimulator.runAllFaultSimulations();
     }
 
     private static void runTrueValueSimulation(Simulator simulator, Circuit circuit, String testVector) {
@@ -53,7 +47,7 @@ public class Main {
         String inputValues = inputLabels.stream()
                 .map(label -> inputs.get(label) ? "1" : "0")
                 .collect(Collectors.joining(" | "));
-        System.out.printf("%-15s | %-15s%n", inputValues, outputValues);
+        System.out.printf("%-20s | %-20s%n", inputValues, outputValues);
     }
 
     private static Map<String, Boolean> parseTestVector(String testVector, List<String> inputLabels) {
@@ -67,9 +61,5 @@ public class Main {
 
     private static boolean validateTestVector(String testVector, int numInputs) {
         return testVector.length() == numInputs && testVector.matches("[01]+");
-    }
-
-    private static boolean validateFaultNodes(List<String> faultNodes, Circuit circuit) {
-        return faultNodes.stream().allMatch(node -> circuit.getInputs().containsKey(node) || circuit.getGates().containsKey(node));
     }
 }

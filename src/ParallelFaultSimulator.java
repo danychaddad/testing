@@ -1,12 +1,13 @@
 import java.util.*;
 import java.util.stream.Collectors;
 
-class SerialFaultSimulator {
+class ParallelFaultSimulator {
     private final Simulator simulator;
     private final FaultInjector faultInjector;
     private final Circuit circuit;
+    private static final int WORD_LENGTH = 32;
 
-    SerialFaultSimulator(Simulator simulator, Circuit circuit) {
+    ParallelFaultSimulator(Simulator simulator, Circuit circuit) {
         this.simulator = simulator;
         this.circuit = circuit;
         this.faultInjector = new FaultInjector(circuit);
@@ -31,26 +32,40 @@ class SerialFaultSimulator {
         List<String> inputLabels = new ArrayList<>(circuit.getInputs().keySet());
         int numCombinations = 1 << inputLabels.size();
 
-        for (String node : faultNodes) {
-            for (boolean faultValue : List.of(true, false)) {
-                System.out.printf("\nNode: %s Stuck-At: %d\n", node, faultValue ? 1 : 0);
-                System.out.printf("%-20s | %-20s | %-20s%n", "Inputs", "Faulty Outputs", "Correct Outputs");
-                System.out.println("-".repeat(65));
+        for (int i = 0; i < numCombinations; i++) {
+            Map<String, Boolean> inputs = getInputVector(i, inputLabels);
+            simulator.runSimulation(inputs, circuit.getGates(), circuit.getOutputs());
+            String correctOutputs = getOutputs(simulator, circuit);
 
-                for (int i = 0; i < numCombinations; i++) {
-                    Map<String, Boolean> inputs = getInputVector(i, inputLabels);
-                    simulator.runSimulation(inputs, circuit.getGates(), circuit.getOutputs());
-                    String correctOutputs = getOutputs(simulator, circuit);
+            String inputValues = inputLabels.stream()
+                    .map(label -> inputs.get(label) ? "1" : "0")
+                    .collect(Collectors.joining(" | "));
+
+            System.out.printf("\nTest Vector: %s\n", inputValues);
+            System.out.printf("%-5s | %-20s | %-20s | %-20s%n", "Pass", "Inputs", "Fault", "Outputs");
+            System.out.println("-".repeat(75));
+
+            int faultCount = 1; // Include fault-free simulation as the first count
+            int currentPass = 1; // Start with Pass = 1
+
+            // Print fault-free outputs
+            System.out.printf("%-5s | %-20s | %-20s | %-20s%n", currentPass, inputValues, "fault free outputs", correctOutputs);
+
+            for (String node : faultNodes) {
+                for (boolean faultValue : List.of(true, false)) {
+                    if (faultCount >= WORD_LENGTH) {
+                        faultCount = 0; // Reset the fault counter
+                        currentPass++;  // Increment the pass number
+                    }
 
                     Map<String, Boolean> faultyInputs = faultInjector.injectStuckAtFault(inputs, node, faultValue);
                     simulator.runSimulation(faultyInputs, circuit.getGates(), circuit.getOutputs());
                     String faultyOutputs = getOutputs(simulator, circuit);
 
-                    String inputValues = inputLabels.stream()
-                            .map(label -> inputs.get(label) ? "1" : "0")
-                            .collect(Collectors.joining(" | "));
+                    String faultDescription = String.format("stuck-at-%d on %s", faultValue ? 1 : 0, node);
+                    System.out.printf("%-5s | %-20s | %-20s | %-20s%n", currentPass, inputValues, faultDescription, faultyOutputs);
 
-                    System.out.printf("%-20s | %-20s | %-20s%n", inputValues, faultyOutputs, correctOutputs);
+                    faultCount++; // Increment the fault count
                 }
             }
         }
