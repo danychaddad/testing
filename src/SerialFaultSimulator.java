@@ -11,7 +11,7 @@ class SerialFaultSimulator {
         return faultCount;
     }
 
-    public Map<String, String> detectedFaults = new HashMap<>();
+    public Set<String> detectedFaults = new HashSet<>();
 
     SerialFaultSimulator(Simulator simulator, Circuit circuit) {
         this.simulator = simulator;
@@ -55,17 +55,12 @@ class SerialFaultSimulator {
                     simulator.runSimulation(faultyInputs, circuit.getGates(), circuit.getOutputs());
                     String faultyOutputs = getOutputs(simulator, circuit);
                     String baseString = String.format("\nNode: %s Stuck-At: %d\n", node, faultValue ? 1 : 0);
-                    detectedFaults.put(node, baseString);
-                    if (!Objects.equals(faultyOutputs, correctOutputs)) {
-                        detectedFaults.put(node, baseString + "detected");
-                    } else {
-                        detectedFaults.put(node, baseString + "not detected");
+                    if (!Objects.equals(correctOutputs, faultyOutputs)) {
+                        detectedFaults.add(baseString);
                     }
-
                     String inputValues = inputLabels.stream()
                             .map(label -> inputs.get(label) ? "1" : "0")
                             .collect(Collectors.joining(" | "));
-
                     System.out.printf("%-20s | %-20s | %-20s%n", inputValues, faultyOutputs, correctOutputs);
                 }
             }

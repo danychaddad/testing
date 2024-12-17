@@ -11,7 +11,7 @@ public class Main {
 
         Scanner scanner = new Scanner(System.in);
         List<String> inputLabels = new ArrayList<>(circuit.getInputs().keySet());
-//
+
 //        String testVector;
 //        while (true) {
 //            System.out.printf("The circuit expects %d inputs.%n", inputLabels.size());
@@ -35,14 +35,20 @@ public class Main {
 
         long parallelstartTime = System.currentTimeMillis();
         System.out.println("Running Parallel Fault Simulation for All Possible Faults...");
-        parallelFaultSimulator.runAllFaultSimulations();
+        parallelFaultSimulator.runAllFaultSimulations(4);
         long parallelEndTime = System.currentTimeMillis();
         long parallelExecutionTime = parallelEndTime - parallelstartTime;
 
+        int numberOfFaults = circuit.getFaultSites() * 2;
+        System.out.println("Total number of faults: " + numberOfFaults);
         System.out.println("Serial fault simulation execution time: " + serialExecutionTime + "ms");
+        int serialFaults = serialFaultSimulator.detectedFaults.size();
+        System.out.println("Serial detected fault count: " + serialFaults);
+        System.out.println("Serial fault coverage: " + (double) serialFaults * 100 / numberOfFaults + "%");
         System.out.println("Parallel fault simulation execution time: " + parallelExecutionTime + "ms");
-
-        System.out.println("Total number of faults: " + circuit.getFaultSites() * 2);
+        int parallelFaults = parallelFaultSimulator.detectedFaults.size();
+        System.out.println("Parallel detected fault count: " + parallelFaults);
+        System.out.println("Parallel fault coverage: " + (double) parallelFaults * 100 / numberOfFaults + "%");
     }
 
     private static void runTrueValueSimulation(Simulator simulator, Circuit circuit, String testVector) {

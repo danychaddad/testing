@@ -5,8 +5,10 @@ class ParallelFaultSimulator {
     private final Simulator simulator;
     private final FaultInjector faultInjector;
     private final Circuit circuit;
-    private static final int WORD_LENGTH = 32;
+    private static int WORD_LENGTH = 32;
     private int faultCount = 0;
+    public Set<String> detectedFaults = new HashSet<>();
+
 
     ParallelFaultSimulator(Simulator simulator, Circuit circuit) {
         this.simulator = simulator;
@@ -16,6 +18,12 @@ class ParallelFaultSimulator {
 
     public int getFaultCount() {
         return faultCount;
+    }
+
+    void runAllFaultSimulations(int wordLength) {
+        WORD_LENGTH = wordLength;
+        List<String> faultNodes = generateAllFaultNodes();
+        runWithFaults(faultNodes);
     }
 
     void runAllFaultSimulations() {
@@ -70,7 +78,10 @@ class ParallelFaultSimulator {
 
                     simulator.runSimulation(faultyInputs, circuit.getGates(), circuit.getOutputs());
                     String faultyOutputs = getOutputs(simulator, circuit);
-
+                    String baseString = String.format("\nNode: %s Stuck-At: %d\n", node, faultValue ? 1 : 0);
+                    if (!Objects.equals(correctOutputs, faultyOutputs)) {
+                        detectedFaults.add(baseString);
+                    }
                     String faultDescription = String.format("stuck-at-%d on %s", faultValue ? 1 : 0, node);
                     System.out.printf("%-5s | %-20s | %-20s | %-20s%n", currentPass, inputValues, faultDescription, faultyOutputs);
 
