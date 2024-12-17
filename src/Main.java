@@ -4,33 +4,42 @@ import java.util.stream.Collectors;
 public class Main {
     public static void main(String[] args) throws Exception {
         BenchParser parser = new BenchParser();
-        Circuit circuit = parser.parse("C:\\Users\\Nicolas\\Desktop\\Testing Project\\testing\\circuit.bench");
+        Circuit circuit = parser.parse("circuit.bench");
         Simulator simulator = new Simulator();
         SerialFaultSimulator serialFaultSimulator = new SerialFaultSimulator(simulator, circuit);
         ParallelFaultSimulator parallelFaultSimulator = new ParallelFaultSimulator(simulator, circuit);
 
         Scanner scanner = new Scanner(System.in);
         List<String> inputLabels = new ArrayList<>(circuit.getInputs().keySet());
+//
+//        String testVector;
+//        while (true) {
+//            System.out.printf("The circuit expects %d inputs.%n", inputLabels.size());
+//            System.out.println("Enter a test vector (e.g., 1010):");
+//            testVector = scanner.next().trim();
+//            if (validateTestVector(testVector, inputLabels.size())) {
+//                break;
+//            }
+//            System.out.println("Invalid test vector. Please enter exactly " + inputLabels.size() + " binary digits.");
+//        }
+//
+//        System.out.println("Running True-Value Simulation...");
+//        runTrueValueSimulation(simulator, circuit, testVector);
 
-        String testVector;
-        while (true) {
-            System.out.printf("The circuit expects %d inputs.%n", inputLabels.size());
-            System.out.println("Enter a test vector (e.g., 1010):");
-            testVector = scanner.next().trim();
-            if (validateTestVector(testVector, inputLabels.size())) {
-                break;
-            }
-            System.out.println("Invalid test vector. Please enter exactly " + inputLabels.size() + " binary digits.");
-        }
-
-        System.out.println("Running True-Value Simulation...");
-        runTrueValueSimulation(simulator, circuit, testVector);
-
+        long serialStartTime = System.currentTimeMillis();
         System.out.println("Running Serial Fault Simulation for All Possible Faults...");
         serialFaultSimulator.runAllFaultSimulations();
+        long serialEndTime = System.currentTimeMillis();
+        long serialExecutionTime = serialEndTime - serialStartTime;
 
+        long parallelstartTime = System.currentTimeMillis();
         System.out.println("Running Parallel Fault Simulation for All Possible Faults...");
         parallelFaultSimulator.runAllFaultSimulations();
+        long parallelEndTime = System.currentTimeMillis();
+        long parallelExecutionTime = parallelEndTime - parallelstartTime;
+
+        System.out.println("Serial fault simulation execution time: " + serialExecutionTime + "ms");
+        System.out.println("Parallel fault simulation execution time: " + parallelExecutionTime + "ms");
     }
 
     private static void runTrueValueSimulation(Simulator simulator, Circuit circuit, String testVector) {
