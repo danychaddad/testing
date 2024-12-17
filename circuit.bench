@@ -1,21 +1,25 @@
-# c17
-# 5 inputs
-# 2 outputs
-# 0 inverter
-# 6 gates ( 6 NANDs )
+# 2-Bit Ripple Carry Adder
+# Inputs: 1, 2, 3, 4 (2-bit input numbers)
+# Inputs: 5 (initial carry-in)
+# Outputs: 10, 11 (sum bits), 12 (final carry-out)
 
 INPUT(1)
 INPUT(2)
 INPUT(3)
-INPUT(6)
-INPUT(7)
+INPUT(4)
+INPUT(5)
 
-OUTPUT(22)
-OUTPUT(23)
+OUTPUT(31)
+OUTPUT(32)
+OUTPUT(33)
 
-10 = NAND(1, 3)
-11 = NAND(3, 6)
-16 = NAND(2, 11)
-19 = NAND(11, 7)
-22 = NAND(10, 16)
-23 = NAND(16, 19)
+10 = XOR(2,3)
+31 = XOR(1,10)
+12 = AND(10,1)
+13 = AND(2,3)
+14 = OR(12,13)
+15 = XOR(4,5)
+32 = XOR(14,15)
+17 = AND(15,14)
+18 = AND(4,5)
+33 = OR(17,18)
