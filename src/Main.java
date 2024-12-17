@@ -26,6 +26,7 @@ public class Main {
 //        System.out.println("Running True-Value Simulation...");
 //        runTrueValueSimulation(simulator, circuit, testVector);
 
+        runAllCombinations(simulator, circuit);
         long serialStartTime = System.currentTimeMillis();
         System.out.println("Running Serial Fault Simulation for All Possible Faults...");
         serialFaultSimulator.runAllFaultSimulations();
@@ -39,9 +40,9 @@ public class Main {
         long parallelExecutionTime = parallelEndTime - parallelstartTime;
 
         System.out.println("Serial fault simulation execution time: " + serialExecutionTime + "ms");
-        System.out.println("Serial number of faults: " + serialFaultSimulator.getFaultCount());
         System.out.println("Parallel fault simulation execution time: " + parallelExecutionTime + "ms");
-        System.out.println("Parallel number of faults: " + parallelFaultSimulator.getFaultCount());
+
+        System.out.println("Total number of faults: " + circuit.getFaultSites() * 2);
     }
 
     private static void runTrueValueSimulation(Simulator simulator, Circuit circuit, String testVector) {
@@ -68,6 +69,28 @@ public class Main {
             testInputs.put(inputLabels.get(i), value);
         }
         return testInputs;
+    }
+
+    public static void runAllCombinations(Simulator simulator, Circuit circuit) {
+        List<String> inputLabels = circuit.getInputs().keySet().stream().sorted().toList();
+        int numInputs = inputLabels.size();
+        int numCombinations = 1 << numInputs;
+
+        System.out.println(String.join(" | ", inputLabels) + " | " + String.join(" | ", circuit.getOutputs()));
+        System.out.println("-".repeat((numInputs + circuit.getOutputs().size()) * 4));
+
+        for (int i = 0; i < numCombinations; i++) {
+            Map<String, Boolean> testInputs = new HashMap<>();
+            for (int j = 0; j < numInputs; j++) {
+                boolean value = (i & (1 << j)) != 0;
+                testInputs.put(inputLabels.get(j), value);
+            }
+            simulator.runSimulation(testInputs, circuit.getGates(), circuit.getOutputs());
+            Map<String, Boolean> results = simulator.getValues();
+            String inputValues = inputLabels.stream().map(label -> testInputs.get(label) ? "1" : "0").reduce((a, b) -> a + " | " + b).orElse("");
+            String outputValues = circuit.getOutputs().stream().map(output -> results.getOrDefault(output, false) ? "1" : "0").reduce((a, b) -> a + " | " + b).orElse("");
+            System.out.println(inputValues + " | " + outputValues);
+        }
     }
 
     private static boolean validateTestVector(String testVector, int numInputs) {

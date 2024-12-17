@@ -11,6 +11,8 @@ class SerialFaultSimulator {
         return faultCount;
     }
 
+    public Map<String, String> detectedFaults = new HashMap<>();
+
     SerialFaultSimulator(Simulator simulator, Circuit circuit) {
         this.simulator = simulator;
         this.circuit = circuit;
@@ -44,7 +46,6 @@ class SerialFaultSimulator {
                 System.out.printf("\nNode: %s Stuck-At: %d\n", node, faultValue ? 1 : 0);
                 System.out.printf("%-20s | %-20s | %-20s%n", "Inputs", "Faulty Outputs", "Correct Outputs");
                 System.out.println("-".repeat(65));
-
                 for (int i = 0; i < numCombinations; i++) {
                     Map<String, Boolean> inputs = getInputVector(i, inputLabels);
                     simulator.runSimulation(inputs, circuit.getGates(), circuit.getOutputs());
@@ -53,6 +54,13 @@ class SerialFaultSimulator {
                     Map<String, Boolean> faultyInputs = faultInjector.injectStuckAtFault(inputs, node, faultValue);
                     simulator.runSimulation(faultyInputs, circuit.getGates(), circuit.getOutputs());
                     String faultyOutputs = getOutputs(simulator, circuit);
+                    String baseString = String.format("\nNode: %s Stuck-At: %d\n", node, faultValue ? 1 : 0);
+                    detectedFaults.put(node, baseString);
+                    if (!Objects.equals(faultyOutputs, correctOutputs)) {
+                        detectedFaults.put(node, baseString + "detected");
+                    } else {
+                        detectedFaults.put(node, baseString + "not detected");
+                    }
 
                     String inputValues = inputLabels.stream()
                             .map(label -> inputs.get(label) ? "1" : "0")
