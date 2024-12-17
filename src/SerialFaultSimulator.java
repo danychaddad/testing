@@ -5,6 +5,11 @@ class SerialFaultSimulator {
     private final Simulator simulator;
     private final FaultInjector faultInjector;
     private final Circuit circuit;
+    private int faultCount = 0;
+
+    public int getFaultCount() {
+        return faultCount;
+    }
 
     SerialFaultSimulator(Simulator simulator, Circuit circuit) {
         this.simulator = simulator;
@@ -24,7 +29,10 @@ class SerialFaultSimulator {
         for (Gate gate : circuit.getGates().values()) {
             faultNodes.addAll(gate.getInputs());
         }
-        return faultNodes.stream().distinct().collect(Collectors.toList());
+
+        List<String> distinctFaultNodes = faultNodes.stream().distinct().collect(Collectors.toList());
+        faultCount = distinctFaultNodes.size() * 2;
+        return distinctFaultNodes;
     }
 
     void runWithFaults(List<String> faultNodes) {

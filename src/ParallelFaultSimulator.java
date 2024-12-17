@@ -6,11 +6,16 @@ class ParallelFaultSimulator {
     private final FaultInjector faultInjector;
     private final Circuit circuit;
     private static final int WORD_LENGTH = 32;
+    private int faultCount = 0;
 
     ParallelFaultSimulator(Simulator simulator, Circuit circuit) {
         this.simulator = simulator;
         this.circuit = circuit;
         this.faultInjector = new FaultInjector(circuit);
+    }
+
+    public int getFaultCount() {
+        return faultCount;
     }
 
     void runAllFaultSimulations() {
@@ -22,10 +27,13 @@ class ParallelFaultSimulator {
         List<String> faultNodes = new ArrayList<>();
         faultNodes.addAll(circuit.getInputs().keySet());
         faultNodes.addAll(circuit.getGates().keySet());
+
         for (Gate gate : circuit.getGates().values()) {
             faultNodes.addAll(gate.getInputs());
         }
-        return faultNodes.stream().distinct().collect(Collectors.toList());
+        List<String> distinctFaultNodes = faultNodes.stream().distinct().collect(Collectors.toList());
+        faultCount = distinctFaultNodes.size() * 2;
+        return distinctFaultNodes;
     }
 
     void runWithFaults(List<String> faultNodes) {
@@ -59,6 +67,7 @@ class ParallelFaultSimulator {
                     }
 
                     Map<String, Boolean> faultyInputs = faultInjector.injectStuckAtFault(inputs, node, faultValue);
+
                     simulator.runSimulation(faultyInputs, circuit.getGates(), circuit.getOutputs());
                     String faultyOutputs = getOutputs(simulator, circuit);
 

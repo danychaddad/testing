@@ -39,7 +39,9 @@ public class Main {
         long parallelExecutionTime = parallelEndTime - parallelstartTime;
 
         System.out.println("Serial fault simulation execution time: " + serialExecutionTime + "ms");
+        System.out.println("Serial number of faults: " + serialFaultSimulator.getFaultCount());
         System.out.println("Parallel fault simulation execution time: " + parallelExecutionTime + "ms");
+        System.out.println("Parallel number of faults: " + parallelFaultSimulator.getFaultCount());
     }
 
     private static void runTrueValueSimulation(Simulator simulator, Circuit circuit, String testVector) {
